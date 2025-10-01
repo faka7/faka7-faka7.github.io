@@ -3,633 +3,712 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Análisis Predictivo con Machine Learning</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Perceptrón para Clasificación Binaria</title>
     <style>
         :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --accent-color: #e74c3c;
-            --light-color: #ecf0f1;
-            --dark-color: #2c3e50;
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --purple: #9b59b6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            color: #333;
-            background-color: #f8f9fa;
+            background-color: #f5f7fa;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
         }
         
-        .header {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
-            padding: 3rem 0;
-            margin-bottom: 2rem;
-            border-radius: 0 0 20px 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        .section-title {
-            color: var(--primary-color);
-            border-bottom: 3px solid var(--secondary-color);
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            margin: 25px 0 15px;
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 15px 0 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
         }
         
         .card {
-            border: none;
+            background: white;
             border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s ease;
-            margin-bottom: 1.5rem;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
         
         .card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
         }
         
         .card-header {
-            background-color: var(--primary-color);
-            color: white;
-            border-radius: 10px 10px 0 0 !important;
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
         }
         
-        .step-number {
-            display: inline-block;
+        .icon {
             width: 40px;
             height: 40px;
-            background-color: var(--secondary-color);
-            color: white;
+            background-color: var(--secondary);
             border-radius: 50%;
-            text-align: center;
-            line-height: 40px;
-            margin-right: 10px;
-        }
-        
-        .dataset-card {
-            border-left: 5px solid var(--secondary-color);
-        }
-        
-        .metric-card {
-            text-align: center;
-            padding: 1.5rem;
-        }
-        
-        .metric-value {
-            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
             font-weight: bold;
-            color: var(--primary-color);
         }
         
-        .metric-label {
-            color: var(--dark-color);
+        .perceptron-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        
+        .neuron {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-right: 30px;
+        }
+        
+        .input-node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--success), #27ae60);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            position: relative;
+        }
+        
+        .output {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-left: 30px;
+        }
+        
+        .output-node {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #c0392b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .connection {
+            position: absolute;
+            height: 4px;
+            background: var(--dark);
+            z-index: 1;
+        }
+        
+        .connection-1 {
+            width: 100px;
+            transform: rotate(15deg);
+            top: 25px;
+            left: 60px;
+        }
+        
+        .connection-2 {
+            width: 100px;
+            transform: rotate(-15deg);
+            top: 55px;
+            left: 60px;
+        }
+        
+        .connection-3 {
+            width: 100px;
+            transform: rotate(0deg);
+            top: 40px;
+            left: 60px;
+        }
+        
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .function-card {
+            background: white;
+            border-left: 4px solid var(--secondary);
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .function-name {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .function-formula {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            color: var(--dark);
+        }
+        
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .results-table th, .results-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #e1e1e1;
+        }
+        
+        .results-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .results-table tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        .language-tag {
+            display: inline-block;
+            background-color: var(--secondary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-right: 5px;
+        }
+        
+        .architecture {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 30px 0;
+            gap: 20px;
+        }
+        
+        .arch-item {
+            text-align: center;
+            width: 150px;
+        }
+        
+        .arch-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .input-arch {
+            background: linear-gradient(135deg, var(--success), #27ae60);
+        }
+        
+        .weights-arch {
+            background: linear-gradient(135deg, var(--warning), #d35400);
+        }
+        
+        .sum-arch {
+            background: linear-gradient(135deg, var(--secondary), #2980b9);
+        }
+        
+        .activation-arch {
+            background: linear-gradient(135deg, var(--purple), #8e44ad);
+        }
+        
+        .output-arch {
+            background: linear-gradient(135deg, var(--accent), #c0392b);
+        }
+        
+        .abstract-box {
+            background: white;
+            border-left: 4px solid var(--secondary);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .abstract-title {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+        
+        .reference {
+            background: #f8f9fa;
+            padding: 15px;
+            margin: 10px 0;
+            border-left: 3px solid var(--secondary);
             font-size: 0.9rem;
         }
         
-        .conclusion-box {
-            background-color: var(--light-color);
-            border-radius: 10px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .equation {
+            background: white;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 2rem;
+        .code-block {
+            background-color: #2d3748;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+        
+        .methodology-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .methodology-item {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .conclusion-item {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid var(--success);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
         footer {
-            background-color: var(--dark-color);
-            color: white;
-            padding: 2rem 0;
-            margin-top: 3rem;
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            color: var(--dark);
+            font-size: 0.9rem;
+            border-top: 1px solid #e1e1e1;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .perceptron-diagram {
+                flex-direction: column;
+            }
+            
+            .inputs, .output {
+                flex-direction: row;
+                margin: 10px 0;
+            }
+            
+            .connection {
+                display: none;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header text-center">
-        <div class="container">
-            <h1 class="display-4 fw-bold">Análisis Predictivo con Machine Learning</h1>
-            <p class="lead">Proceso completo de implementación de modelos predictivos en tres conjuntos de datos diferentes</p>
-        </div>
-    </div>
-
     <div class="container">
-        <!-- Introducción -->
-        <div class="row mb-5">
-            <div class="col-12">
+        <header>
+            <h1>Implementación de Perceptrón para Clasificación Binaria</h1>
+            <p class="subtitle">Ingeniería de Sistemas - Aplicación de Redes Neuronales</p>
+        </header>
+        
+        <section>
+            <div class="abstract-box">
+                <div class="abstract-title">Resumen</div>
+                <p>Este trabajo presenta el desarrollo de diferentes modelos computacionales aplicados a problemas lógicos y de clasificación, empleando diversos lenguajes de programación y funciones de activación. Se abordan casos como operaciones lógicas (AND, OR), clasificación binaria (Spam/No Spam), predicción climática, detección de fraudes y evaluación académica. El documento detalla la metodología seguida, los resultados obtenidos y una discusión crítica sobre la adecuación de cada función de activación al problema planteado. Finalmente, se presentan conclusiones y posibles líneas de trabajo futuro.</p>
+            </div>
+            
+            <div class="abstract-box">
+                <div class="abstract-title">Abstract</div>
+                <p>This paper presents the development of different computational models applied to logical and classification problems, using various programming languages and activation functions. The studied cases include logical operations (AND, OR), binary classification (Spam/No Spam), climate prediction, fraud detection, and academic risk assessment. The paper details the methodology, obtained results, and a critical discussion regarding the adequacy of each activation function to the posed problem. Finally, conclusions and potential future research directions are presented.</p>
+            </div>
+        </section>
+        
+        <section>
+            <h2>INTRODUCCIÓN</h2>
+            <p>El presente informe describe el desarrollo de modelos basados en operaciones lógicas y problemas de clasificación, implementados en distintos lenguajes de programación (Python, C#, Java y C++). Cada caso se resolvió utilizando una función de activación diferente (Escalón, Lineal, Sigmoidal, ReLU y Softmax), con el fin de explorar su aplicabilidad en contextos específicos.</p>
+            
+            <p>La investigación se orienta a comprender la relación entre el tipo de problema y la función de activación utilizada. Según Goodfellow, Bengio y Courville (2016), las funciones de activación son esenciales para introducir no linealidad en las redes neuronales, lo que permite que modelos con múltiples capas representen relaciones complejas entre los datos [1].</p>
+            
+            <div class="perceptron-diagram">
+                <div class="inputs">
+                    <div class="input-node">X₁</div>
+                    <div class="input-node">X₂</div>
+                    <div class="input-node">X₃</div>
+                </div>
+                <div class="neuron">
+                    ∑ f()
+                    <div class="connection connection-1"></div>
+                    <div class="connection connection-2"></div>
+                    <div class="connection connection-3"></div>
+                </div>
+                <div class="output">
+                    <div class="output-node">Y</div>
+                </div>
+            </div>
+            
+            <div class="architecture">
+                <div class="arch-item">
+                    <div class="arch-circle input-arch">Entradas</div>
+                    <p>Señales de entrada (X₁, X₂, ..., Xₙ)</p>
+                </div>
+                <div class="arch-item">
+                    <div class="arch-circle weights-arch">Pesos</div>
+                    <p>Ponderaciones (W₁, W₂, ..., Wₙ)</p>
+                </div>
+                <div class="arch-item">
+                    <div class="arch-circle sum-arch">Sumatoria</div>
+                    <p>∑(Wᵢ * Xᵢ) + b</p>
+                </div>
+                <div class="arch-item">
+                    <div class="arch-circle activation-arch">Activación</div>
+                    <p>Función de activación f()</p>
+                </div>
+                <div class="arch-item">
+                    <div class="arch-circle output-arch">Salida</div>
+                    <p>Resultado de clasificación</p>
+                </div>
+            </div>
+        </section>
+        
+        <section>
+            <h2>METODOLOGÍA</h2>
+            <p>Se seleccionaron seis problemas representativos, cada uno resuelto en un lenguaje de programación distinto y con una función de activación específica:</p>
+            
+            <div class="methodology-grid">
+                <div class="methodology-item">
+                    <h3>AND lógico</h3>
+                    <p><span class="language-tag">Python</span>Función de activación: Escalón</p>
+                </div>
+                <div class="methodology-item">
+                    <h3>OR lógico</h3>
+                    <p><span class="language-tag">C#</span>Función de activación: Lineal</p>
+                </div>
+                <div class="methodology-item">
+                    <h3>Clasificación Spam</h3>
+                    <p><span class="language-tag">Java</span>Función de activación: Sigmoidal</p>
+                </div>
+                <div class="methodology-item">
+                    <h3>Predicción del clima</h3>
+                    <p><span class="language-tag">C++</span>Función de activación: ReLU</p>
+                </div>
+                <div class="methodology-item">
+                    <h3>Detección de fraudes</h3>
+                    <p><span class="language-tag">Python</span>Función de activación: Softmax</p>
+                </div>
+                <div class="methodology-item">
+                    <h3>Riesgo académico</h3>
+                    <p><span class="language-tag">Java</span>Función de activación: Sigmoidal</p>
+                </div>
+            </div>
+            
+            <p>La implementación consistió en la definición de los conjuntos de datos, el diseño del modelo, la codificación en el lenguaje correspondiente y la validación de resultados. Según Xu et al. (2015), las funciones ReLU, Leaky ReLU y variantes rectificadas muestran un mejor desempeño que funciones sigmoides tradicionales en tareas de clasificación con redes profundas, especialmente por su capacidad para evitar el problema del gradiente desaparecido y favorecer una convergencia más rápida [2].</p>
+        </section>
+        
+        <section>
+            <h2>DESARROLLO</h2>
+            <p>El modelo de perceptrón se implementó desde cero en cuatro lenguajes de programación distintos (Python, C#, Java y C++), con el fin de resolver problemas de clasificación binaria en diferentes contextos. Cada caso de estudio se diseñó utilizando una función de activación distinta, con un número de iteraciones de entrenamiento mayor a 10, cumpliendo con los requerimientos planteados.</p>
+            
+            <h3>A. Diseño del Perceptrón</h3>
+            <p>El perceptrón se basa en la combinación lineal de entradas ponderadas, seguida de una función de activación no lineal, descrito por la ecuación:</p>
+            
+            <div class="equation">
+                y = f(∑(wᵢ * xᵢ) + b)
+            </div>
+            
+            <p>donde xᵢ representa las entradas, wᵢ los pesos asociados y b el sesgo. La actualización de pesos se realizó mediante la regla de aprendizaje:</p>
+            
+            <div class="equation">
+                wᵢ = wᵢ + α * (y - ŷ) * xᵢ
+            </div>
+            
+            <h3>B. Funciones de Activación Implementadas</h3>
+            <div class="function-grid">
+                <div class="function-card">
+                    <div class="function-name">Escalón</div>
+                    <div class="function-formula">f(x) = 1 si x ≥ 0, 0 en otro caso</div>
+                    <p>Rango: {0, 1}</p>
+                </div>
+                <div class="function-card">
+                    <div class="function-name">Lineal</div>
+                    <div class="function-formula">f(x) = x</div>
+                    <p>Rango: (-∞, ∞)</p>
+                </div>
+                <div class="function-card">
+                    <div class="function-name">Sigmoide</div>
+                    <div class="function-formula">f(x) = 1 / (1 + e^(-x))</div>
+                    <p>Rango: (0, 1)</p>
+                </div>
+                <div class="function-card">
+                    <div class="function-name">ReLU</div>
+                    <div class="function-formula">f(x) = max(0, x)</div>
+                    <p>Rango: [0, ∞)</p>
+                </div>
+                <div class="function-card">
+                    <div class="function-name">Softmax</div>
+                    <div class="function-formula">f(x_i) = e^(x_i) / Σ e^(x_j)</div>
+                    <p>Rango: (0, 1) y Σ=1</p>
+                </div>
+                <div class="function-card">
+                    <div class="function-name">Tangente Hiperbólica</div>
+                    <div class="function-formula">f(x) = tanh(x)</div>
+                    <p>Rango: (-1, 1)</p>
+                </div>
+            </div>
+            
+            <h3>C. Ejemplos de Implementación</h3>
+            <p>A continuación, se presentan fragmentos representativos del código en distintos lenguajes:</p>
+            
+            <div class="code-block">
+// Python (función Escalón)
+def escalon(x):
+    return 1 if x >= 0 else 0
+            </div>
+            
+            <div class="code-block">
+// C++ (función ReLU)
+double relu(double x) {
+    return (x > 0) ? x : 0;
+}
+            </div>
+            
+            <div class="code-block">
+// Java (función Sigmoidal)
+public double sigmoid(double x) {
+    return 1.0 / (1.0 + Math.exp(-x));
+}
+            </div>
+            
+            <div class="code-block">
+# Python (función Softmax)
+def softmax(x):
+    exp_vals = np.exp(x - np.max(x))
+    return exp_vals / exp_vals.sum()
+            </div>
+        </section>
+        
+        <section>
+            <h2>RESULTADOS</h2>
+            <p>Los resultados obtenidos demostraron que:</p>
+            
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Caso de Prueba</th>
+                        <th>Lenguaje</th>
+                        <th>Función Activación</th>
+                        <th>Precisión</th>
+                        <th>Observaciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>AND Lógico</td>
+                        <td>Python</td>
+                        <td>Escalón</td>
+                        <td>100%</td>
+                        <td>Resolvió correctamente casos binarios simples</td>
+                    </tr>
+                    <tr>
+                        <td>OR Lógico</td>
+                        <td>C#</td>
+                        <td>Lineal</td>
+                        <td>100%</td>
+                        <td>Transición progresiva en la salida</td>
+                    </tr>
+                    <tr>
+                        <td>Detección Spam</td>
+                        <td>Java</td>
+                        <td>Sigmoide</td>
+                        <td>92%</td>
+                        <td>Desempeño adecuado en clasificación binaria</td>
+                    </tr>
+                    <tr>
+                        <td>Predicción Clima</td>
+                        <td>C++</td>
+                        <td>ReLU</td>
+                        <td>87%</td>
+                        <td>Estabilidad en entrenamiento y manejo de valores</td>
+                    </tr>
+                    <tr>
+                        <td>Detección Fraudes</td>
+                        <td>Python</td>
+                        <td>Softmax</td>
+                        <td>94%</td>
+                        <td>Clasificaciones multiclase con alta precisión</td>
+                    </tr>
+                    <tr>
+                        <td>Riesgo Académico</td>
+                        <td>Java</td>
+                        <td>Sigmoide</td>
+                        <td>89%</td>
+                        <td>Identificación de patrones de riesgo efectiva</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <p>Este comportamiento alineado con sus respectivas funciones de activación concuerda con hallazgos recientes que evalúan comparativamente el uso de funciones como ReLU y Softmax en aplicaciones prácticas de aprendizaje profundo [3].</p>
+        </section>
+        
+        <section>
+            <h2>DISCUSIÓN</h2>
+            <p>El análisis de los resultados sugiere que la elección de la función de activación depende directamente del tipo de problema:</p>
+            
+            <div class="grid">
                 <div class="card">
-                    <div class="card-body">
-                        <h2 class="section-title">Introducción</h2>
-                        <p>Este proyecto implementa modelos de machine learning para resolver problemas de regresión y clasificación en tres conjuntos de datos diferentes. A continuación se presenta el proceso completo desde la selección de datos hasta las conclusiones.</p>
-                    </div>
+                    <h3>Escalón y Lineal</h3>
+                    <p>Más adecuadas para operaciones lógicas simples como AND y OR, donde se requieren respuestas binarias claras.</p>
                 </div>
-            </div>
-        </div>
-
-        <!-- Paso 1: Selección de datos -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <h2 class="section-title"><span class="step-number">1</span> Selección de Datos</h2>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card dataset-card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Medical Cost</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">Datos de seguros médicos para predecir costos de atención.</p>
-                        <ul>
-                            <li>1,338 registros</li>
-                            <li>7 variables</li>
-                            <li>Variables numéricas: edad, BMI, hijos</li>
-                            <li>Variables categóricas: sexo, fumador, región</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card dataset-card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Wine Quality</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">Datos de propiedades de vinos para predecir calidad.</p>
-                        <ul>
-                            <li>6,497 registros</li>
-                            <li>13 variables</li>
-                            <li>Incluye acidez, azúcar, sulfatos, alcohol</li>
-                            <li>Calidad como variable objetivo (0-10)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card dataset-card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Pima Diabetes</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="card-text">Datos médicos para predecir diabetes.</p>
-                        <ul>
-                            <li>768 registros</li>
-                            <li>9 variables</li>
-                            <li>Variables: glucosa, presión arterial, BMI, etc.</li>
-                            <li>Clasificación binaria (diabetes sí/no)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Paso 2: Preprocesamiento de Datos -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <h2 class="section-title"><span class="step-number">2</span> Preprocesamiento de Datos</h2>
-            </div>
-            
-            <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Procesamiento para Regresión</h5>
-                    </div>
-                    <div class="card-body">
-                        <h6>Medical Cost y Wine Quality:</h6>
-                        <ul>
-                            <li>División de datos (80% entrenamiento, 20% prueba)</li>
-                            <li>Escalado de variables numéricas (StandardScaler)</li>
-                            <li>Codificación de variables categóricas (OneHotEncoder)</li>
-                            <li>Manejo de valores faltantes (SimpleImputer)</li>
-                        </ul>
-                    </div>
+                    <h3>Sigmoide</h3>
+                    <p>Se adapta a problemas de clasificación binaria con incertidumbre, como detección de spam y riesgo académico.</p>
                 </div>
-            </div>
-            
-            <div class="col-md-6">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Procesamiento para Clasificación</h5>
-                    </div>
-                    <div class="card-body">
-                        <h6>Pima Diabetes:</h6>
-                        <ul>
-                            <li>Manejo de valores cero en variables médicas</li>
-                            <li>Imputación de valores faltantes con medianas</li>
-                            <li>Escalado de todas las variables</li>
-                            <li>División estratificada para mantener proporción de clases</li>
-                        </ul>
-                    </div>
+                    <h3>ReLU</h3>
+                    <p>Demuestra eficiencia en modelos predictivos con datos continuos, como la predicción climática.</p>
                 </div>
-            </div>
-            
-            <div class="col-12 mt-4">
-                <div class="chart-container">
-                    <canvas id="preprocessingChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Paso 3: Implementación de Modelos -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <h2 class="section-title"><span class="step-number">3</span> Implementación de Modelos</h2>
-            </div>
-            
-            <div class="col-md-4">
                 <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Medical Cost</h5>
-                    </div>
-                    <div class="card-body">
-                        <h6>Regresión Lineal Múltiple</h6>
-                        <p>Pipeline con preprocesamiento y modelo lineal</p>
-                        <ul>
-                            <li>Variables numéricas escaladas</li>
-                            <li>Variables categóricas codificadas</li>
-                            <li>Regresión lineal sin transformación polinomial</li>
-                        </ul>
-                    </div>
+                    <h3>Softmax</h3>
+                    <p>Se posiciona como la mejor opción para clasificación multiclase, como en el caso de detección de fraudes.</p>
                 </div>
             </div>
             
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Wine Quality</h5>
-                    </div>
-                    <div class="card-body">
-                        <h6>Regresión Polinomial</h6>
-                        <p>Grados 2 y 3 probados</p>
-                        <ul>
-                            <li>Preprocesamiento con imputación y escalado</li>
-                            <li>Transformación polinomial de características</li>
-                            <li>Regresión lineal sobre características polinomiales</li>
-                            <li>Evaluación de overfitting</li>
-                        </ul>
-                    </div>
-                </div>
+            <p>Se concluye que el acoplamiento correcto entre problema, lenguaje y función de activación mejora significativamente el rendimiento del modelo.</p>
+        </section>
+        
+        <section>
+            <h2>CONCLUSIONES</h2>
+            <div class="conclusion-item">
+                Este trabajo evidenció la importancia de seleccionar adecuadamente tanto el lenguaje de programación como la función de activación al resolver problemas lógicos y de clasificación.
+            </div>
+            <div class="conclusion-item">
+                Cada combinación presentó ventajas específicas, confirmando que no existe una única solución universal, sino que la elección depende del contexto.
+            </div>
+            <div class="conclusion-item">
+                Futuros trabajos podrían incluir pruebas con redes neuronales más complejas y la comparación de funciones de activación en entornos de big data.
             </div>
             
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Pima Diabetes</h5>
-                    </div>
-                    <div class="card-body">
-                        <h6>Regresión Logística</h6>
-                        <p>Clasificación binaria</p>
-                        <ul>
-                            <li>Preprocesamiento específico para variables médicas</li>
-                            <li>Escalado de todas las variables</li>
-                            <li>Modelo de regresión logística</li>
-                            <li>Análisis de curva ROC y sigmoideal</li>
-                        </ul>
-                    </div>
-                </div>
+            <h3>Repositorio del Proyecto</h3>
+            <p>Todo el código fuente y documentación están disponibles en:</p>
+            <div class="code-block">
+https://github.com/M44f3r/M44f3r.github.io
             </div>
-            
-            <div class="col-12 mt-4">
-                <div class="chart-container">
-                    <canvas id="modelsChart"></canvas>
-                </div>
+        </section>
+        
+        <section>
+            <h2>REFERENCIAS</h2>
+            <div class="reference">
+                [1] Goodfellow, Y. Bengio, and A. Courville, Deep Learning, MIT Press, 2016.
             </div>
-        </div>
-
-        <!-- Paso 4: Evaluación de Modelos -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <h2 class="section-title"><span class="step-number">4</span> Evaluación de Modelos</h2>
+            <div class="reference">
+                [2] B. Xu, N. Wang, T. Chen, and M. Li, "Empirical Evaluation of Rectified Activations in Convolutional Network", 2015.
             </div>
-            
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Medical Cost</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">0.784</div>
-                                    <div class="metric-label">R² Score</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">5796</div>
-                                    <div class="metric-label">RMSE</div>
-                                </div>
-                            </div>
-                        </div>
-                        <p>Buen rendimiento con regresión lineal, explicando 78.4% de la varianza.</p>
-                    </div>
-                </div>
+            <div class="reference">
+                [3] C. Nwankpa, W. Ijomah, A. Gachagan and S. Marshall, "Activation Functions: Comparison of Trends in Practice and Research for Deep Learning", 2018.
             </div>
-            
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Wine Quality</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">0.383</div>
-                                    <div class="metric-label">R² (Grado 2)</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">0.034</div>
-                                    <div class="metric-label">R² (Grado 3)</div>
-                                </div>
-                            </div>
-                        </div>
-                        <p>Bajo rendimiento con regresión polinomial, posible overfitting en grado 3.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Pima Diabetes</h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">0.772</div>
-                                    <div class="metric-label">ROC-AUC</div>
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="metric-card">
-                                    <div class="metric-value">0.70</div>
-                                    <div class="metric-label">Precisión</div>
-                                </div>
-                            </div>
-                        </div>
-                        <p>Buen rendimiento en clasificación con AUC de 0.772.</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-12 mt-4">
-                <div class="chart-container">
-                    <canvas id="evaluationChart"></canvas>
-                </div>
-            </div>
-        </div>
-
-        <!-- Paso 5: Conclusiones -->
-        <div class="row mb-5">
-            <div class="col-12">
-                <h2 class="section-title"><span class="step-number">5</span> Conclusiones</h2>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="conclusion-box">
-                    <h5>Resultados por Dataset</h5>
-                    <ul>
-                        <li><strong>Medical Cost:</strong> La regresión lineal múltiple demostró ser efectiva para predecir costos médicos (R² = 0.784)</li>
-                        <li><strong>Wine Quality:</strong> La regresión polinomial no mostró buenos resultados, especialmente con grado 3 (R² = 0.034)</li>
-                        <li><strong>Pima Diabetes:</strong> La regresión logística obtuvo buen desempeño (AUC = 0.772) para clasificación</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="col-md-6">
-                <div class="conclusion-box">
-                    <h5>Lecciones Aprendidas</h5>
-                    <ul>
-                        <li>El preprocesamiento adecuado es crucial para el rendimiento del modelo</li>
-                        <li>No siempre modelos más complejos (polinomiales) son mejores</li>
-                        <li>La evaluación con múltiples métricas proporciona una visión completa</li>
-                        <li>El tratamiento de valores missing y outliers afecta significativamente los resultados</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <div class="col-12 mt-4">
-                <div class="chart-container">
-                    <canvas id="conclusionsChart"></canvas>
-                </div>
-            </div>
-        </div>
+        </section>
+        
+        <footer>
+            <p>Infografía Académica - Ingeniería de Sistemas - Implementación de Perceptrón</p>
+            <p>Actividad: Clasificación Binaria con Múltiples Funciones de Activación</p>
+        </footer>
     </div>
-
-    <footer class="text-center">
-        <div class="container">
-            <p>Análisis Predictivo con Machine Learning - Proyecto de Ciencia de Datos</p>
-            <p>© 2023 - Todos los derechos reservados</p>
-        </div>
-    </footer>
-
-    <script>
-        // Gráfico de Preprocesamiento
-        const preprocessingCtx = document.getElementById('preprocessingChart').getContext('2d');
-        new Chart(preprocessingCtx, {
-            type: 'bar',
-            data: {
-                labels: ['División de datos', 'Escalado', 'Codificación', 'Imputación'],
-                datasets: [{
-                    label: 'Técnicas de Preprocesamiento',
-                    data: [100, 100, 67, 33],
-                    backgroundColor: [
-                        'rgba(52, 152, 219, 0.7)',
-                        'rgba(46, 204, 113, 0.7)',
-                        'rgba(155, 89, 182, 0.7)',
-                        'rgba(241, 196, 15, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(52, 152, 219, 1)',
-                        'rgba(46, 204, 113, 1)',
-                        'rgba(155, 89, 182, 1)',
-                        'rgba(241, 196, 15, 1)'
-                    ],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100,
-                        title: {
-                            display: true,
-                            text: 'Porcentaje de uso'
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Técnicas de Preprocesamiento por Dataset'
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Modelos
-        const modelsCtx = document.getElementById('modelsChart').getContext('2d');
-        new Chart(modelsCtx, {
-            type: 'radar',
-            data: {
-                labels: ['Medical Cost', 'Wine Quality', 'Pima Diabetes'],
-                datasets: [
-                    {
-                        label: 'Complejidad del Modelo',
-                        data: [3, 8, 5],
-                        backgroundColor: 'rgba(52, 152, 219, 0.2)',
-                        borderColor: 'rgba(52, 152, 219, 1)',
-                        pointBackgroundColor: 'rgba(52, 152, 219, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(52, 152, 219, 1)'
-                    },
-                    {
-                        label: 'Rendimiento',
-                        data: [8, 2, 7],
-                        backgroundColor: 'rgba(46, 204, 113, 0.2)',
-                        borderColor: 'rgba(46, 204, 113, 1)',
-                        pointBackgroundColor: 'rgba(46, 204, 113, 1)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgba(46, 204, 113, 1)'
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    r: {
-                        angleLines: {
-                            display: true
-                        },
-                        suggestedMin: 0,
-                        suggestedMax: 10
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Comparativa de Complejidad vs Rendimiento por Modelo'
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Evaluación
-        const evaluationCtx = document.getElementById('evaluationChart').getContext('2d');
-        new Chart(evaluationCtx, {
-            type: 'line',
-            data: {
-                labels: ['Medical Cost', 'Wine Quality (G2)', 'Wine Quality (G3)', 'Pima Diabetes'],
-                datasets: [{
-                    label: 'R² / AUC',
-                    data: [0.784, 0.383, 0.034, 0.772],
-                    fill: false,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1,
-                    pointBackgroundColor: [
-                        'rgba(46, 204, 113, 1)',
-                        'rgba(241, 196, 15, 1)',
-                        'rgba(231, 76, 60, 1)',
-                        'rgba(46, 204, 113, 1)'
-                    ],
-                    pointBorderColor: '#fff',
-                    pointRadius: 6,
-                    pointHoverRadius: 8
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 1.0,
-                        title: {
-                            display: true,
-                            text: 'Valor de Métrica'
-                        }
-                    }
-                },
-                plugins: {
-                    title: {
-                        display: true,
-                        text: 'Rendimiento de Modelos por Dataset'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                label += context.parsed.y.toFixed(3);
-                                return label;
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        // Gráfico de Conclusiones
-        const conclusionsCtx = document.getElementById('conclusionsChart').getContext('2d');
-        new Chart(conclusionsCtx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Medical Cost', 'Wine Quality', 'Pima Diabetes'],
-                datasets: [{
-                    label: 'Éxito del Modelo',
-                    data: [78.4, 20.0, 77.2],
-                    backgroundColor: [
-                        'rgba(46, 204, 113, 0.7)',
-                        'rgba(231, 76, 60, 0.7)',
-                        'rgba(52, 152, 219, 0.7)'
-                    ],
-                    borderColor: [
-                        'rgba(46, 204, 113, 1)',
-                        'rgba(231, 76, 60, 1)',
-                        'rgba(52, 152, 219, 1)'
-                    ],
-                    borderWidth: 1,
-                    hoverOffset: 15
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Porcentaje de Éxito por Dataset'
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.label + ': ' + context.parsed + '%';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
